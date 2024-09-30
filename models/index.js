@@ -23,23 +23,24 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-// Import the User model
+// Import the User and Role models
 db.user = require("./users.js")(sequelize, Sequelize);
 db.role = require("./role.js")(sequelize, Sequelize);
+db.userRoles = require("./userRoles.js")(sequelize, Sequelize); // Include join table
 
 // Define associations
 db.user.belongsToMany(db.role, {
-  through: "user_roles",
-  as: "roles",
-  foreignKey: "userId",
-  otherKey: "roleId",
+  through: db.userRoles, // Use the join table
+  as: "roles",           // Alias for the relationship
+  foreignKey: "userId", // Foreign key for the user
+  otherKey: "roleId"    // Foreign key for the role
 });
 
 db.role.belongsToMany(db.user, {
-  through: "user_roles",
-  as: "users",
-  foreignKey: "roleId",
-  otherKey: "userId",
+  through: db.userRoles, // Use the join table
+  as: "users",           // Alias for the relationship
+  foreignKey: "roleId",  // Foreign key for the role
+  otherKey: "userId"     // Foreign key for the user
 });
 
 module.exports = db;
