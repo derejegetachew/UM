@@ -12,7 +12,6 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
     if (user) {
       return res.status(400).send({ message: "Failed! Username is already in use!" });
     }
-
     // Check for duplicate email
     const emailUser = await User.findOne({
       where: { email: req.body.email }
@@ -20,7 +19,6 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
     if (emailUser) {
       return res.status(400).send({ message: "Failed! Email is already in use!" });
     }
-
     next();
   } catch (err) {
     return res.status(500).send({ message: err.message });
@@ -42,5 +40,4 @@ checkRolesExisted = (req, res, next) => {
     checkDuplicateUsernameOrEmail,
     checkRolesExisted
   };
-  
   module.exports = verifySignUp;

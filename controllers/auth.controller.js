@@ -7,12 +7,20 @@ const bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
   try {
+    console.log("Received signup request with body:", req.body);
+
     // Create a new user
     const user = await User.create({
+      id: req.body.id,
+      firstname: req.body.firstname,
+      lastname: req.body.lastname,
       username: req.body.username,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
+      roleid: req.body.roleid
     });
+
+    console.log("User created successfully", user);
 
     // Assign roles to the user
     if (req.body.roles) {
@@ -21,20 +29,34 @@ exports.signup = async (req, res) => {
           name: req.body.roles,
         },
       });
-      await user.setRoles(roles);
+      console.log("Roles found:", roles);
+
+      if (roles.length > 0) {
+        await user.setRoles(roles);
+        console.log("Roles assigned to user:", roles);
+      } else {
+        console.log("No roles found for assignment");
+      }
     } else {
       // Default role is "user"
       const role = await Role.findOne({
         where: { name: "user" },
       });
-      await user.setRoles([role]);
+      if (role) {
+        await user.setRoles([role]);
+        console.log("Default role assigned:", role);
+      } else {
+        console.log("Default role 'user' not found");
+      }
     }
 
     res.status(200).send({ message: "User was registered successfully!" });
   } catch (err) {
+    console.error("Error during signup:", err);
     res.status(500).send({ message: err.message });
   }
 };
+
 exports.signin = async (req, res) => {
     try {
       const user = await User.findOne({
