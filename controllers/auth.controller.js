@@ -1,113 +1,63 @@
-const config = require("../configration/dbconfig");
-const db = require("../models");
-const User = db.user;
-const Role = db.role;
-const jwt = require("jsonwebtoken");
+const db = require('../models'); // Adjust path if necessary
+const User = db.user; // Ensure you're accessing it as `db.user`
+const Role = db.role; // Access the Role model if needed
 const bcrypt = require("bcryptjs");
 
 exports.signup = async (req, res) => {
   try {
     console.log("Received signup request with body:", req.body);
 
-    // Create a new user
-    const user = await User.create({
+    const newuser = await User.create({
       id: req.body.id,
       firstname: req.body.firstname,
       lastname: req.body.lastname,
       username: req.body.username,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
-      roleid: req.body.roleid
     });
 
-    console.log("User created successfully", user);
-
-    // Assign roles to the user
-    if (req.body.roles) {
-      const roles = await Role.findAll({
-        where: {
-          name: req.body.roles,
-        },
-      });
-      console.log("Roles found:", roles);
-
-      if (roles.length > 0) {
-        await user.setRoles(roles);
-        console.log("Roles assigned to user:", roles);
-      } else {
-        console.log("No roles found for assignment");
-      }
-    } else {
-      // Default role is "user"
-      const role = await Role.findOne({
-        where: { name: "user" },
-      });
-      if (role) {
-        await user.setRoles([role]);
-        console.log("Default role assigned:", role);
-      } else {
-        console.log("Default role 'user' not found");
-      }
-    }
-
+    console.log("User created successfully", newuser);
     res.status(200).send({ message: "User was registered successfully!" });
   } catch (err) {
     console.error("Error during signup:", err);
     res.status(500).send({ message: err.message });
   }
 };
+exports.role = async (req, res) => {
+  try {
+    console.log("Received role request with body:", req.body);
 
-exports.signin = async (req, res) => {
-    try {
-      const user = await User.findOne({
-        where: {
-          [db.Sequelize.Op.or]: [
-            { username: req.body.username },
-            { email: req.body.email },
-          ],
-        },
-        include: [
-          {
-            model: Role,
-            as: "roles",
-            attributes: ["name"],
-            through: { attributes: [] }, // Exclude join table attributes
-          },
-        ],
-      });
-   
-      if (!user) {
-        return res.status(404).send({ message: "Invalid Username or Password!" });
-      }
-  
-      const passwordIsValid = bcrypt.compareSync(
-        req.body.password,
-        user.password
-      );
-  
-      if (!passwordIsValid) {
-        return res.status(401).send({
-          accessToken: null,
-          message: "Invalid Username or Password!",
-        });
-      }
-  
-      const token = jwt.sign({ id: user.id }, config.secret, {
-        algorithm: "HS256",
-        expiresIn: 86400, // 24 hours
-      });
-  
-      const authorities = user.roles.map((role) => "ROLE_" + role.name.toUpperCase());
-  
-      res.status(200).send({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        roles: authorities,
-        accessToken: token,
-      });
-    } catch (err) {
-      res.status(500).send({ message: err.message });
+    const newrole = await Role.create({
+      id: req.body.id,
+      name: req.body.name
+    });
+
+    console.log("User created successfully", newrole );
+    res.status(200).send({ message: "role was registered successfully!" });
+  } catch (err) {
+    console.error("Error during signup:", err);
+    res.status(500).send({ message: err.message });
+  }
+};
+
+exports.roleassign = async (req, res) => {
+  try {
+    const { userId, roleId } = req.body; 
+
+    const user = await db.user.findByPk(userId);
+    if (!user) {
+      return res.status(404).send({ message: "User not found!" });
     }
-  };
-  
+
+    const role = await db.role.findByPk(roleId);
+    if (!role) {
+      return res.status(404).send({ message: "Role not found!" });
+    }
+    await user.addRole(role); 
+
+    res.status(200).send({ message: "Role assigned successfully!" });
+  } catch (err) {
+    console.error("Error assigning role:", err);
+    res.status(500).send({ message: err.message });
+  }
+};

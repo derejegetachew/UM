@@ -1,5 +1,10 @@
-module.exports = (sequelize, DataTypes) => {
-  const User = sequelize.define('User', {
+const { DataTypes } = require('sequelize');
+module.exports = (sequelize) => {
+  const User = sequelize.define('Users', {
+    id: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
     firstname: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -15,16 +20,13 @@ module.exports = (sequelize, DataTypes) => {
     email: {
       type: DataTypes.STRING,
       allowNull: false,
-      validate: { isEmail: true },
+      unique: true,
     },
     password: {
       type: DataTypes.STRING,
       allowNull: false,
     },
-    roleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-    },
   });
-  return User;
+
+  return User; // Make sure to return the User model
 };

@@ -1,10 +1,16 @@
-module.exports = (sequelize, DataTypes) => {
+const { DataTypes } = require('sequelize');
+
+module.exports = (sequelize) => {
   const Role = sequelize.define('Role', {
+    id: {
+      type: DataTypes.STRING,
+      primaryKey: true,
+    },
     name: {
       type: DataTypes.STRING,
       allowNull: false,
-      unique: true,
     },
   });
-  return Role;
+
+  return Role; // Make sure to return the Role model
 };
