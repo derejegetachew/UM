@@ -2,7 +2,6 @@
 const db = require("../models");
 //const ROLES = db.ROLE;
 const User = db.user;
-
 checkDuplicateUsernameOrEmail = async (req, res, next) => {
   try {
     // Check for duplicate username
@@ -26,6 +25,5 @@ checkDuplicateUsernameOrEmail = async (req, res, next) => {
 };
   const verifySignUp = {
     checkDuplicateUsernameOrEmail,
-    
   };
   module.exports = verifySignUp;
